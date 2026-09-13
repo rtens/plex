@@ -1,6 +1,6 @@
 export default class Link {
 
-  async send(packet) { }
+  send(packet) { }
 
-  async receive(packet) { }
+  receive(packet) { }
 }

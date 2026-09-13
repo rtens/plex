@@ -1,6 +1,7 @@
 export default class Signal {
-  _waiting = null
   _data = []
+  _waiting = null
+  _stopped = false
 
   transmit(buffer) {
     if (!this._waiting) {
@@ -22,13 +23,12 @@ export default class Signal {
       this._waiting = resolve)
   }
 
-  end() {
-    this.ended = () =>
-      !this._data.length
+  stop() {
+    this._stopped = true
     return this
   }
 
-  ended() {
-    return false
+  transmits() {
+    return this._data.length || !this._stopped
   }
 }

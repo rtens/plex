@@ -4,5 +4,5 @@ export default class Cell {
 
   emit() { return new Signal() }
 
-  async detect(signal) { }
+  detect(signal) { }
 }

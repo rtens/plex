@@ -1,23 +1,29 @@
 export default class Packet {
   identifier
   content
-  index = 0
-  final = true
+  next = null
+  first = true
 
   constructor(identifier, content) {
     this.identifier = identifier
     this.content = content
   }
 
-  sequenced(index = 0) {
-    this.index = index
-    this.final = false
+  start(next) {
+    this.next = next
+    this.first = true
     return this
   }
 
-  finalized(index) {
-    this.index = index
-    this.final = true
+  chain(next) {
+    this.next = next
+    this.first = false
+    return this
+  }
+
+  end() {
+    this.next = 0
+    this.first = false
     return this
   }
 }
