@@ -2,7 +2,6 @@
 
 ## Current
 
-
 ## Planned
 
 #### [feature] Pack and Unpack
@@ -53,12 +52,15 @@
 
 ### Version 0.1
 
+#### [feature] Broadcast emitted Signals
+- Use pub/sub for Signal
+
 #### [refactor] Chain with previous Packet
 
 #### [refactor] Signal Chains
 - Signals are chained instead of sequenced
 
-#### [feature] Broadcast Signals
+#### [feature] Broadcast received Signals
 - Cell emits and detects Signal
 - Node forwards Signals to other Links
 - Node distributes Signals to Cells

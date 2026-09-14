@@ -1,6 +1,8 @@
 import Signal from '../../core/src/signal.js'
+import Packer from './packer.js'
 
 export default class Node {
+  _packer
   _cells = []
   _links = []
 
@@ -8,20 +10,42 @@ export default class Node {
   _signals = {}
   _buffer = {}
 
+  constructor(packer) {
+    this._packer = packer || new Packer()
+    this._packer.packed = packet => this._packed(packet)
+  }
+
   add(cell) {
     this._cells.push(cell)
+    cell.emit = () => this._emit(cell)
     return cell
   }
 
   attach(link) {
     this._links.push(link)
-    link.receive = packet => this.receive(packet, link)
+    link.receive = packet => this._receive(packet, link)
     return link
   }
 
   on_error(_error) { }
 
-  receive(packet, source) {
+  _packed(packet) {
+    this._links.forEach(l => l.send(packet))
+  }
+
+  _emit(emitter) {
+    const signal = new Signal()
+    this._packer.pack(signal)
+
+    for (const cell of this._cells) {
+      if (cell == emitter) continue
+      cell.detect(signal)
+    }
+
+    return signal
+  }
+
+  _receive(packet, source) {
     if (this._already_received(packet)) return
 
     this._forward(packet, source)
@@ -49,12 +73,11 @@ export default class Node {
 
   _distribute(packet) {
     if (!packet.follows) {
-      this._signals[packet.id] = []
-      for (const cell of this._cells) {
-        const signal = new Signal()
-        this._signals[packet.id].push(signal)
-        this._safely(() => cell.detect(signal))
-      }
+      const signal = new Signal()
+      this._signals[packet.id] = signal
+
+      this._cells.forEach(cell =>
+        this._safely(() => cell.detect(signal)))
 
     } else if (!(packet.follows in this._signals)) {
       this._buffer[packet.follows] = packet
@@ -76,11 +99,12 @@ export default class Node {
       delete this._signals[packet.follows]
     }
 
-    for (const signal of this._signals[packet.id]) {
-      signal.transmit(packet.content)
-      if (packet.last) signal.stop()
-    }
+    const signal = this._signals[packet.id]
+    signal.transmit(packet.content)
 
-    if (packet.last) delete this._signals[packet.id]
+    if (packet.last) {
+      signal.stop()
+      delete this._signals[packet.id]
+    }
   }
 }

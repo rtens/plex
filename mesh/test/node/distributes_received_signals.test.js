@@ -189,8 +189,9 @@ class TestCell extends Cell {
     this.detected = new Promise(y => resolve = y)
 
     let data = ''
-    while (signal.transmits()) {
-      data += await signal.receive()
+    const receiver = signal.receiver()
+    while (receiver.receiving()) {
+      data += await receiver.receive()
     }
     this.data.push(data)
     resolve(this.data)

@@ -1,44 +1,64 @@
 import test from 'ava'
 import Signal from '../../src/signal.js'
 
-test('one chunk', async t => {
+test('transmit before receive', async t => {
   const signal = new Signal()
-  signal.transmit('foo')
+    .transmit('foo')
 
-  t.is(await signal.receive(), 'foo')
+  const receiver = signal.receiver()
+  t.is(await receiver.receive(), 'foo')
 })
 
 test('mutliple chunks', async t => {
   const signal = new Signal()
-  signal.transmit('foo')
-  signal.transmit('bar')
-  signal.transmit('baz')
+    .transmit('foo')
+    .transmit('bar')
+    .transmit('baz')
 
-  t.is(await signal.receive(), 'foo')
-  t.is(await signal.receive(), 'bar')
-  t.is(await signal.receive(), 'baz')
+  const receiver = signal.receiver()
+  t.is(await receiver.receive(), 'foo')
+  t.is(await receiver.receive(), 'bar')
+  t.is(await receiver.receive(), 'baz')
 })
 
 test('receive before transmit', async t => {
   const signal = new Signal()
 
-  signal.transmit('foo')
-  t.is(await signal.receive(), 'foo')
+  const receiver = signal.receiver()
+  setTimeout(() => signal
+    .transmit('foo')
+    .transmit('bar'))
 
-  const wait = signal.receive()
-  signal.transmit('bar')
-  t.is(await wait, 'bar')
-
-  signal.transmit('baz')
-  t.is(await signal.receive(), 'baz')
+  t.is(await receiver.receive(), 'foo')
+  t.is(await receiver.receive(), 'bar')
 })
 
-test('too many receivers', async t => {
+test('multiple recievers', async t => {
   const signal = new Signal()
 
-  signal.receive()
+  const one = signal.receiver()
+  signal.transmit('foo')
+  signal.transmit('bar')
 
-  t.throwsAsync(() => signal.receive(), {
+  const two = signal.receiver()
+  setTimeout(() => signal.transmit('baz'))
+
+  t.is(await one.receive(), 'foo')
+  t.is(await one.receive(), 'bar')
+  t.is(await one.receive(), 'baz')
+
+  t.is(await two.receive(), 'foo')
+  t.is(await two.receive(), 'bar')
+  t.is(await two.receive(), 'baz')
+})
+
+test('pending receiver', async t => {
+  const signal = new Signal()
+
+  const receiver = signal.receiver()
+  receiver.receive()
+
+  t.throwsAsync(() => receiver.receive(), {
     message: 'Receiver pending'
   })
 })
