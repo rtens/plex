@@ -1,8 +1,8 @@
 import test from 'ava'
+import Cell from '../../../core/src/cell.js'
 import Node from '../../src/node.js'
 import Link from '../../src/link.js'
 import Packet from '../../src/packet.js'
-import Cell from '../../src/cell.js'
 
 test('no cells', t => {
   const node = new Node()

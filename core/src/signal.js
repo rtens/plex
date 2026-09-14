@@ -3,13 +3,13 @@ export default class Signal {
   _waiting = null
   _stopped = false
 
-  transmit(buffer) {
+  transmit(data) {
     if (!this._waiting) {
-      this._data.push(buffer)
+      this._data.push(data)
       return this
     }
 
-    this._waiting(buffer)
+    this._waiting(data)
     this._waiting = null
     return this
   }

@@ -1,4 +1,4 @@
-import Signal from './signal.js'
+import Signal from '../../core/src/signal.js'
 
 export default class Node {
   _cells = []
