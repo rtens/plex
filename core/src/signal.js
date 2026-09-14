@@ -4,6 +4,10 @@ export default class Signal {
   _stopped = false
 
   transmit(data) {
+    if (this._stopped) {
+      throw new Error('Signal stopped')
+    }
+
     if (!this._waiting) {
       this._data.push(data)
       return this
@@ -19,6 +23,14 @@ export default class Signal {
       return this._data.shift()
     }
 
+    if (this._stopped) {
+      throw new Error('Signal stopped')
+    }
+
+    if (this._waiting) {
+      throw new Error('Receiver pending')
+    }
+
     return new Promise(resolve =>
       this._waiting = resolve)
   }
@@ -29,6 +41,6 @@ export default class Signal {
   }
 
   transmits() {
-    return this._data.length || !this._stopped
+    return !!this._data.length || !this._stopped
   }
 }

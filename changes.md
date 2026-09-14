@@ -5,24 +5,20 @@
 
 ## Planned
 
-#### [refactor] Byte array identifiers
-
 #### [feature] Pack and Unpack
-- Type 0 (Small Packet)
+- Type 0 (Single Packet)
   - 1b 0x00
-  - 1b content size (byte)
-  - 0-255b content
-- Type 1 (Single Packet)
-  - 1b 0x01
-  - 16b identifier
+  - 16b identifier (random string)
   - 2b content size (big endian)
   - 0-1400b content
-- Type 2 (Start of Chain)
-  - 1b 0x02
+- Type 1 (Chain)
+  - 1b 0x01
   - 16b identifier
-  - -- rest like Type 1
-- Type 3 (Chain)
-  - 1b 0x03
+  - 16b identifier of previous packet (0 if first)
+  - 2b content size
+  - 0-1400b content
+- Type 2 (End of Chain)
+  - 1b 0x02
   - -- rest like Type 2
 
 #### [feature] UDP Node
@@ -36,12 +32,18 @@
 ## Ideas
 
 #### Limit Packet buffer
+- Either with a ring buffer or time-out
 
-#### Limit stored Packet identifiers
+#### Limit deduplication buffer
+- Either with a ring buffer or time-out
 
-#### Time-out abandoned Signals
+#### Limit Signal buffer
+- Either with a ring buffer or time-out
 
-#### Detach broken links
+#### Detach broken Links
+
+#### Ignore Signal
+- Data is not transmitted to ignored Signals
 
 #### Discover Nodes
 - Using network broadcast
@@ -50,6 +52,8 @@
 ## Completed
 
 ### Version 0.1
+
+#### [refactor] Chain with previous Packet
 
 #### [refactor] Signal Chains
 - Signals are chained instead of sequenced

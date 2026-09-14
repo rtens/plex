@@ -31,7 +31,7 @@ test('already received packet', t => {
   const two = node.attach(new TestLink())
 
   one.receive(new Packet('one', 'foo'))
-  one.receive(new Packet('one', 'foo'))
+  one.receive(new Packet('one', 'bar'))
 
   t.deepEqual(two.sent, [new Packet('one', 'foo')])
 })
@@ -42,11 +42,11 @@ test('multiple packets', t => {
   const two = node.attach(new TestLink())
 
   one.receive(new Packet('one', 'foo'))
-  one.receive(new Packet('two', 'foo'))
+  one.receive(new Packet('two', 'bar'))
 
   t.deepEqual(two.sent, [
     new Packet('one', 'foo'),
-    new Packet('two', 'foo')])
+    new Packet('two', 'bar')])
 })
 
 test('error while sending', async t => {
@@ -60,7 +60,7 @@ test('error while sending', async t => {
   const caught = new Promise(y => on_error = y)
   node.on_error = e => on_error(e)
 
-  one.receive(new Packet('one', 'foo'))
+  one.receive(new Packet())
 
   t.deepEqual(await caught, 'oops')
 })
@@ -76,7 +76,7 @@ test('rejection while sending', async t => {
   const caught = new Promise(y => on_error = y)
   node.on_error = e => on_error(e)
 
-  one.receive(new Packet('one', 'foo'))
+  one.receive(new Packet())
 
   t.deepEqual(await caught, 'oops')
 })

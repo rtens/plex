@@ -29,10 +29,9 @@ export default class Node {
   }
 
   _already_received(packet) {
-    const key = packet.identifier + '.' + packet.index
-    if (key in this._received) return true
+    if (packet.id in this._received) return true
 
-    this._received[key] = true
+    this._received[packet.id] = true
     return false
   }
 
@@ -49,45 +48,39 @@ export default class Node {
   }
 
   _distribute(packet) {
-    if (packet.first) {
-      this._signals[packet.identifier] = []
+    if (!packet.follows) {
+      this._signals[packet.id] = []
       for (const cell of this._cells) {
         const signal = new Signal()
-        this._signals[packet.identifier].push(signal)
+        this._signals[packet.id].push(signal)
         this._safely(() => cell.detect(signal))
       }
-    }
 
-    if (!(packet.identifier in this._signals)) {
-      this._buffer[packet.identifier] = packet
+    } else if (!(packet.follows in this._signals)) {
+      this._buffer[packet.follows] = packet
       return
     }
 
-    for (const signal of this._signals[packet.identifier]) {
+    this._transmit(packet)
+
+    while (packet.id in this._buffer) {
+      packet = this._buffer[packet.id]
+      delete this._buffer[packet.follows]
+      this._transmit(packet)
+    }
+  }
+
+  _transmit(packet) {
+    if (packet.follows in this._signals) {
+      this._signals[packet.id] = this._signals[packet.follows]
+      delete this._signals[packet.follows]
+    }
+
+    for (const signal of this._signals[packet.id]) {
       signal.transmit(packet.content)
+      if (packet.last) signal.stop()
     }
 
-    while (packet.next in this._buffer) {
-      this._signals[packet.next] = this._signals[packet.identifier]
-      delete this._signals[packet.identifier]
-
-      packet = this._buffer[packet.next]
-      delete this._buffer[packet.identifier]
-
-      for (const signal of this._signals[packet.identifier]) {
-        signal.transmit(packet.content)
-      }
-    }
-
-    if (packet.next) {
-      this._signals[packet.next] = this._signals[packet.identifier]
-
-    } else {
-      for (const signal of this._signals[packet.identifier]) {
-        signal.stop()
-      }
-    }
-
-    delete this._signals[packet.identifier]
+    if (packet.last) delete this._signals[packet.id]
   }
 }

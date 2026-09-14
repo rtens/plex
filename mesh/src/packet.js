@@ -1,29 +1,25 @@
-export default class Packet {
-  identifier
-  content
-  next = null
-  first = true
+import crypto from 'node:crypto'
 
-  constructor(identifier, content) {
-    this.identifier = identifier
+export default class Packet {
+  id
+  content
+  follows = null
+  last = true
+
+  constructor(id, content) {
+    this.id = id
     this.content = content
   }
 
-  start(next) {
-    this.next = next
-    this.first = true
+  chain(follows = 0) {
+    this.follows = follows
+    this.last = false
     return this
   }
 
-  chain(next) {
-    this.next = next
-    this.first = false
-    return this
-  }
-
-  end() {
-    this.next = 0
-    this.first = false
+  end(follows = 0) {
+    this.follows = follows
+    this.last = true
     return this
   }
 }

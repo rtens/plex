@@ -31,7 +31,7 @@ test('already received packet', async t => {
   const cell = node.add(new TestCell())
 
   link.receive(new Packet('one', 'foo'))
-  link.receive(new Packet('one', 'bar'))
+  link.receive(new Packet('one', 'foo'))
 
   t.deepEqual(await cell.detected, ['foo'])
 })
@@ -52,19 +52,30 @@ test('packet chain', async t => {
   const link = node.attach(new Link())
   const cell = node.add(new TestCell())
 
-  link.receive(new Packet('one', 'foo').start('two'))
-  link.receive(new Packet('two', 'bar').chain('tre'))
-  link.receive(new Packet('tre', 'baz').end())
+  link.receive(new Packet('one', 'foo').chain())
+  link.receive(new Packet('two', 'bar').chain('one'))
+  link.receive(new Packet('tre', 'baz').end('two'))
 
   t.deepEqual(await cell.detected, ['foobarbaz'])
 })
 
-test('one packet chain', async t => {
+test('short chain', async t => {
   const node = new Node()
   const link = node.attach(new Link())
   const cell = node.add(new TestCell())
 
-  link.receive(new Packet('one', 'foo').start(0))
+  link.receive(new Packet('one', 'foo').chain())
+  link.receive(new Packet('two', 'bar').end('one'))
+
+  t.deepEqual(await cell.detected, ['foobar'])
+})
+
+test('single-packet chain', async t => {
+  const node = new Node()
+  const link = node.attach(new Link())
+  const cell = node.add(new TestCell())
+
+  link.receive(new Packet('one', 'foo').end())
 
   t.deepEqual(await cell.detected, ['foo'])
 })
@@ -74,9 +85,9 @@ test('interrupted chain', async t => {
   const link = node.attach(new Link())
   const cell = node.add(new TestCell())
 
-  link.receive(new Packet('one', 'foo').start('tre'))
+  link.receive(new Packet('one', 'foo').chain())
   link.receive(new Packet('two', 'bar'))
-  link.receive(new Packet('tre', 'baz').end())
+  link.receive(new Packet('tre', 'baz').end('one'))
 
   t.deepEqual(await cell.detected, ['bar', 'foobaz'])
 })
@@ -86,11 +97,24 @@ test('out of order chain', async t => {
   const link = node.attach(new Link())
   const cell = node.add(new TestCell())
 
-  link.receive(new Packet('two', 'foo').chain('tre'))
-  link.receive(new Packet('tre', 'bar').end())
-  link.receive(new Packet('one', 'baz').start('two'))
+  link.receive(new Packet('tre', 'baz').end('two'))
+  link.receive(new Packet('one', 'foo').chain())
+  link.receive(new Packet('two', 'bar').chain('one'))
 
-  t.deepEqual(await cell.detected, ['bazfoobar'])
+  t.deepEqual(await cell.detected, ['foobarbaz'])
+})
+
+test('partially out of order chain', async t => {
+  const node = new Node()
+  const link = node.attach(new Link())
+  const cell = node.add(new TestCell())
+
+  link.receive(new Packet('one', 'foo').chain())
+  link.receive(new Packet('two', 'baz').chain('one'))
+  link.receive(new Packet('for', 'bar').end('tre'))
+  link.receive(new Packet('tre', 'bam').chain('two'))
+
+  t.deepEqual(await cell.detected, ['foobazbambar'])
 })
 
 test('error during detection', async t => {
@@ -130,13 +154,12 @@ test('cleans up buffer', async t => {
   const link = node.attach(new Link())
   const cell = node.add(new TestCell())
 
-  link.receive(new Packet('two').chain('tre'))
-  link.receive(new Packet('tre').end())
-  link.receive(new Packet('one').start('two'))
+  link.receive(new Packet('two').chain('one'))
+  link.receive(new Packet('tre').end('two'))
+  link.receive(new Packet('one').chain())
 
   await cell.detected
   t.deepEqual(node._buffer, {})
-  t.deepEqual(node._signals, {})
 })
 
 test('cleans up signals', async t => {
@@ -144,12 +167,14 @@ test('cleans up signals', async t => {
   const link = node.attach(new Link())
   const cell = node.add(new TestCell())
 
-  link.receive(new Packet('two').chain('tre'))
-  link.receive(new Packet('tre').end())
-  link.receive(new Packet('one').start('two'))
+  link.receive(new Packet('two').chain('one'))
+  link.receive(new Packet('tre').end('two'))
+  link.receive(new Packet('one').chain())
 
-  link.receive(new Packet('uno').start('dos'))
-  link.receive(new Packet('dos').end())
+  link.receive(new Packet('uno').chain())
+  link.receive(new Packet('dos').end('uno'))
+
+  link.receive(new Packet('bla'))
 
   await cell.detected
   t.deepEqual(node._signals, {})
