@@ -1,9 +1,9 @@
 import Signal from './signal.js'
-import Packet from './packet.js'
 
 export default class Node {
   _cells = []
   _links = []
+
   _received = {}
   _signals = {}
   _buffer = {}
