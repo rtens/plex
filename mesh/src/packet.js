@@ -1,5 +1,3 @@
-import crypto from 'node:crypto'
-
 export default class Packet {
   id
   content
@@ -11,13 +9,13 @@ export default class Packet {
     this.content = content
   }
 
-  chain(follows = 0) {
+  chain(follows = null) {
     this.follows = follows
     this.last = false
     return this
   }
 
-  end(follows = 0) {
+  end(follows = null) {
     this.follows = follows
     this.last = true
     return this
