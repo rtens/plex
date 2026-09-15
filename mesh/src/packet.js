@@ -1,5 +1,3 @@
-import crypto from 'node:crypto'
-
 export default class Packet {
   id
   content

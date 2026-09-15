@@ -2,9 +2,8 @@
 
 ## Current
 
-## Planned
-
-#### [feature] Pack and Unpack
+#### [feature] UDP Link
+- [Server and client](https://gist.github.com/sid24rane/6e6698e93360f2694e310dd347a2e2eb)
 - Type 0 (Single Packet)
   - 1b 0x00
   - 16b identifier (random string)
@@ -19,13 +18,14 @@
 - Type 2 (End of Chain)
   - 1b 0x02
   - -- rest like Type 2
+  
 
-#### [feature] UDP Node
-- [Server and client](https://gist.github.com/sid24rane/6e6698e93360f2694e310dd347a2e2eb)
+## Planned
 
-#### [feature] CLI Emitter
-
-#### [feature] CLI Detector
+#### [feature] Applications
+- Node
+- Emitter
+- Detector
 
 
 ## Ideas
