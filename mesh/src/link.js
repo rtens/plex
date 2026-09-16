@@ -5,7 +5,7 @@ export default class Link {
 
   receive(_packet) { }
 
-  break() { this._broken = true }
+  async break() { this._broken = true }
 
   broken() { return this._broken }
 }

@@ -45,13 +45,37 @@ UdpLink.Server = class extends Link {
     return wait
   }
 
-  break() {
+  async break() {
     super.break()
+
+    let done
+    const wait = new Promise(y => done = y)
+
+    this._socket.on('close', () => done())
     this._socket.close()
+
+    return wait
   }
 
   _inflate(data) {
-    return new Packet(Buffer.from('one'), Buffer.from('two'))
+    const type = data[0]
+    const id = data.subarray(1, 17)
+
+    let i = 17
+    let follows = null
+    if (type & 2) {
+      follows = data.subarray(i, i + 16)
+      i += 16
+    }
+
+    const size = data.subarray(i, i + 2).readUInt16BE()
+    const content = data.subarray(i + 2, i + 2 + size)
+
+    const packet = new Packet(id, content)
+    packet.follows = follows
+    packet.last = !(type & 1)
+
+    return packet
   }
 }
 

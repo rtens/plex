@@ -1,9 +1,6 @@
 # plex Changes
 
 ## Current
-
-#### [feature] UDP Link
-- [Server and client](https://gist.github.com/sid24rane/6e6698e93360f2694e310dd347a2e2eb)
   
 
 ## Planned
@@ -37,6 +34,8 @@
 ## Completed
 
 ### Version 0.1
+
+#### [feature] UDP Link
 
 #### [feature] Broadcast emitted Signals
 - Use pub/sub for Signal

@@ -67,7 +67,7 @@ test('one-Packet chain', async t => {
     '00' + '1111' + '0002' + 'baba')
 })
 
-let last_port = 2222
+let last_port = 12300
 
 function start_server() {
   const port = last_port++
