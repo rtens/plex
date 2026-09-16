@@ -1,11 +1,11 @@
 import test from 'ava'
-import net from 'node:net'
-import Server from '../../../src/tcp/server.js'
+import udp from 'node:dgram'
+import Server from '../../../src/udp/server.js'
 import Packet from '../../../src/packet.js'
 
 test.todo('...')
 
-let last_port = 12400
+let last_port = 12200
 
 async function send(data) {
   const port = last_port++
@@ -14,11 +14,8 @@ async function send(data) {
   let received = Promise.withResolvers()
   server.receive = packet => received.resolve(packet)
 
-  const client = new net.Socket()
-  client.connect(port, 'localhost', () => {
-    client.write(data)
-    client.destroy()
-  })
+  const socket = udp.createSocket('udp4')
+  socket.send(data, port, 'localhost', () => socket.close())
 
   received = await received.promise
   await server.break()

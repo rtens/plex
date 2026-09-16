@@ -1,14 +1,15 @@
 # plex Changes
 
 ## Current
+
+#### [feature] TCP Link
   
 
 ## Planned
 
 #### [feature] Applications
-- Node
-- Emitter
-- Detector
+- backchannel over TCP
+- deal with connect/unconnect while running
 
 
 ## Ideas
@@ -34,8 +35,6 @@
 ## Completed
 
 ### Version 0.1
-
-#### [feature] TCP Link
 
 #### [feature] UDP Link
 
