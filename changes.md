@@ -35,6 +35,8 @@
 
 ### Version 0.1
 
+#### [feature] TCP Link
+
 #### [feature] UDP Link
 
 #### [feature] Broadcast emitted Signals

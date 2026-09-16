@@ -1,7 +1,7 @@
 import test from 'ava'
 import udp from 'node:dgram'
-import UdpLink from '../../src/udp_link.js'
-import Packet from '../../src/packet.js'
+import Server from '../../../src/udp/server.js'
+import Packet from '../../../src/packet.js'
 
 test('single Packet', async t => {
   const received = await send(Buffer.from(
@@ -56,16 +56,15 @@ let last_port = 12200
 
 async function send(data) {
   const port = last_port++
-  const server = await new UdpLink.Server().run(port)
+  const server = await new Server().listen(port)
 
-  let receive
-  let received = new Promise(y => receive = y)
-  server.receive = packet => receive(packet)
+  let received = Promise.withResolvers()
+  server.receive = packet => received.resolve(packet)
 
   const socket = udp.createSocket('udp4')
   socket.send(data, port, 'localhost', () => socket.close())
 
-  received = await received
+  received = await received.promise
   await server.break()
 
   return received

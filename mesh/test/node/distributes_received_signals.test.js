@@ -21,8 +21,8 @@ test('multiple cells', async t => {
 
   link.receive(new Packet('one', 'foo'))
 
-  t.deepEqual(await one.detected, ['foo'])
-  t.deepEqual(await two.detected, ['foo'])
+  t.deepEqual(await one.detected.promise, ['foo'])
+  t.deepEqual(await two.detected.promise, ['foo'])
 })
 
 test('already received packet', async t => {
@@ -33,7 +33,7 @@ test('already received packet', async t => {
   link.receive(new Packet('one', 'foo'))
   link.receive(new Packet('one', 'foo'))
 
-  t.deepEqual(await cell.detected, ['foo'])
+  t.deepEqual(await cell.detected.promise, ['foo'])
 })
 
 test('several packets', async t => {
@@ -44,7 +44,7 @@ test('several packets', async t => {
   link.receive(new Packet('one', 'foo'))
   link.receive(new Packet('two', 'bar'))
 
-  t.deepEqual(await cell.detected, ['foo', 'bar'])
+  t.deepEqual(await cell.detected.promise, ['foo', 'bar'])
 })
 
 test('packet chain', async t => {
@@ -56,7 +56,7 @@ test('packet chain', async t => {
   link.receive(new Packet('two', 'bar').chain('one'))
   link.receive(new Packet('tre', 'baz').end('two'))
 
-  t.deepEqual(await cell.detected, ['foobarbaz'])
+  t.deepEqual(await cell.detected.promise, ['foobarbaz'])
 })
 
 test('short chain', async t => {
@@ -67,7 +67,7 @@ test('short chain', async t => {
   link.receive(new Packet('one', 'foo').chain())
   link.receive(new Packet('two', 'bar').end('one'))
 
-  t.deepEqual(await cell.detected, ['foobar'])
+  t.deepEqual(await cell.detected.promise, ['foobar'])
 })
 
 test('single-packet chain', async t => {
@@ -77,7 +77,7 @@ test('single-packet chain', async t => {
 
   link.receive(new Packet('one', 'foo').end())
 
-  t.deepEqual(await cell.detected, ['foo'])
+  t.deepEqual(await cell.detected.promise, ['foo'])
 })
 
 test('interrupted chain', async t => {
@@ -89,7 +89,7 @@ test('interrupted chain', async t => {
   link.receive(new Packet('two', 'bar'))
   link.receive(new Packet('tre', 'baz').end('one'))
 
-  t.deepEqual(await cell.detected, ['bar', 'foobaz'])
+  t.deepEqual(await cell.detected.promise, ['bar', 'foobaz'])
 })
 
 test('out of order chain', async t => {
@@ -101,7 +101,7 @@ test('out of order chain', async t => {
   link.receive(new Packet('one', 'foo').chain())
   link.receive(new Packet('two', 'bar').chain('one'))
 
-  t.deepEqual(await cell.detected, ['foobarbaz'])
+  t.deepEqual(await cell.detected.promise, ['foobarbaz'])
 })
 
 test('partially out of order chain', async t => {
@@ -114,7 +114,7 @@ test('partially out of order chain', async t => {
   link.receive(new Packet('for', 'bar').end('tre'))
   link.receive(new Packet('tre', 'bam').chain('two'))
 
-  t.deepEqual(await cell.detected, ['foobazbambar'])
+  t.deepEqual(await cell.detected.promise, ['foobazbambar'])
 })
 
 test('error during detection', async t => {
@@ -124,13 +124,12 @@ test('error during detection', async t => {
     detect() { throw 'oops' }
   })
 
-  let on_error
-  const caught = new Promise(y => on_error = y)
-  node.on_error = e => on_error(e)
+  const caught = Promise.withResolvers()
+  node.on_error = e => caught.resolve(e)
 
   link.receive(new Packet('one', 'foo'))
 
-  t.deepEqual(await caught, 'oops')
+  t.deepEqual(await caught.promise, 'oops')
 })
 
 test('rejection during detection', async t => {
@@ -140,13 +139,12 @@ test('rejection during detection', async t => {
     detect() { return Promise.reject('oops') }
   })
 
-  let on_error
-  const caught = new Promise(y => on_error = y)
-  node.on_error = e => on_error(e)
+  const caught = Promise.withResolvers()
+  node.on_error = e => caught.resolve(e)
 
   link.receive(new Packet('one', 'foo'))
 
-  t.deepEqual(await caught, 'oops')
+  t.deepEqual(await caught.promise, 'oops')
 })
 
 test('cleans up buffer', async t => {
@@ -158,7 +156,7 @@ test('cleans up buffer', async t => {
   link.receive(new Packet('tre').end('two'))
   link.receive(new Packet('one').chain())
 
-  await cell.detected
+  await cell.detected.promise
   t.deepEqual(node._buffer, {})
 })
 
@@ -176,24 +174,21 @@ test('cleans up signals', async t => {
 
   link.receive(new Packet('bla'))
 
-  await cell.detected
+  await cell.detected.promise
   t.deepEqual(node._signals, {})
 })
 
 class TestCell extends Cell {
-  detected
+  detected = Promise.withResolvers()
   data = []
 
   async detect(signal) {
-    let resolve
-    this.detected = new Promise(y => resolve = y)
-
     let data = ''
     const receiver = signal.receiver()
     while (receiver.receiving()) {
       data += await receiver.receive()
     }
     this.data.push(data)
-    resolve(this.data)
+    this.detected.resolve(this.data)
   }
 }

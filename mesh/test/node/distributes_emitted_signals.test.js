@@ -10,7 +10,7 @@ test('one Cell', async t => {
 
   cell.emit().transmit('foo').stop()
 
-  t.deepEqual(await cell.detected, null)
+  t.deepEqual(cell.detected, null)
 })
 
 test('multiple Cells', async t => {
@@ -21,9 +21,9 @@ test('multiple Cells', async t => {
 
   cell.emit().transmit('foo').transmit('bar').stop()
 
-  t.deepEqual(await cell.detected, null)
-  t.deepEqual(await one.detected, ['foobar'])
-  t.deepEqual(await two.detected, ['foobar'])
+  t.deepEqual(cell.detected, null)
+  t.deepEqual(await one.detected.promise, ['foobar'])
+  t.deepEqual(await two.detected.promise, ['foobar'])
 })
 
 class TestCell extends Cell {
@@ -31,8 +31,7 @@ class TestCell extends Cell {
   data = []
 
   async detect(signal) {
-    let resolve
-    this.detected = new Promise(y => resolve = y)
+    this.detected = Promise.withResolvers()
 
     let data = ''
     const receiver = signal.receiver()
@@ -40,7 +39,7 @@ class TestCell extends Cell {
       data += await receiver.receive()
     }
     this.data.push(data)
-    resolve(this.data)
+    this.detected.resolve(this.data)
   }
 }
 

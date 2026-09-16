@@ -22,8 +22,8 @@ test('multiple links', async t => {
 
   cell.emit().transmit('foo').stop()
 
-  t.deepEqual(await one.sent, [new Packet('one', ['foo'])])
-  t.deepEqual(await two.sent, [new Packet('one', ['foo'])])
+  t.deepEqual(await one.sent.promise, [new Packet('one', ['foo'])])
+  t.deepEqual(await two.sent.promise, [new Packet('one', ['foo'])])
 })
 
 test('multiple signals', async t => {
@@ -34,7 +34,7 @@ test('multiple signals', async t => {
   cell.emit().transmit('foo').stop()
   cell.emit().transmit('bar').stop()
 
-  t.deepEqual(await one.sent, [
+  t.deepEqual(await one.sent.promise, [
     new Packet('one', ['foo']),
     new Packet('two', ['bar'])
   ])
@@ -43,7 +43,7 @@ test('multiple signals', async t => {
 class TestLink extends Link {
   expected
   collected = []
-  sent = new Promise(y => this.done = y)
+  sent = Promise.withResolvers()
 
   constructor(expected = 1) {
     super()
@@ -53,7 +53,7 @@ class TestLink extends Link {
   send(p) {
     this.collected.push(p)
     if (this.collected.length == this.expected)
-      this.done(this.collected)
+      this.sent.resolve(this.collected)
   }
 }
 

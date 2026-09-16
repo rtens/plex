@@ -56,13 +56,12 @@ test('error while sending', async t => {
     send() { throw 'oops' }
   })
 
-  let on_error
-  const caught = new Promise(y => on_error = y)
-  node.on_error = e => on_error(e)
+  const caught = Promise.withResolvers()
+  node.on_error = e => caught.resolve(e)
 
   one.receive(new Packet())
 
-  t.deepEqual(await caught, 'oops')
+  t.deepEqual(await caught.promise, 'oops')
 })
 
 test('rejection while sending', async t => {
@@ -72,13 +71,12 @@ test('rejection while sending', async t => {
     send() { return Promise.reject('oops') }
   })
 
-  let on_error
-  const caught = new Promise(y => on_error = y)
-  node.on_error = e => on_error(e)
+  const caught = Promise.withResolvers()
+  node.on_error = e => caught.resolve(e)
 
   one.receive(new Packet())
 
-  t.deepEqual(await caught, 'oops')
+  t.deepEqual(await caught.promise, 'oops')
 })
 
 class TestLink extends Link {

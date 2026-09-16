@@ -51,7 +51,7 @@ Signal.Receiver = class {
       throw new Error('Signal stopped')
 
     this._at++
-    return new Promise(y => this._wait = y)
+    return new Promise(resolve => this._wait = resolve)
   }
 
   async receive_all() {
