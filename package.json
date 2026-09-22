@@ -1,0 +1,13 @@
+{
+  "name": "plex",
+  "version": "0.1",
+  "homepage": "https://github.com/rtens/plex",
+  "type": "module",
+  "scripts": {
+    "test": "ava",
+    "retest": "ava --watch"
+  },
+  "devDependencies": {
+    "ava": "^8.0.1"
+  }
+}
