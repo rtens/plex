@@ -1,13 +1,13 @@
 # plex Changes
 
 ## Current
-  
+
+#### [feature] Node receives Messages
+
 
 ## Planned
 
 ### Version 0.1
-
-#### [feature] Node receives Messages
 
 #### [feature] Node forwards received Messages
 
@@ -29,7 +29,7 @@
 #### Message Delivery
 - To Children
 - To Parents
-- Handle minssing Children
+- Handle missing Children
 
 #### React to received Message
 - Message Sending
