@@ -13,6 +13,11 @@ export default class Value extends Structure {
     return new Value(Buffer.from(value))
   }
 
+  add(...data) {
+    this._data = Buffer.concat([this._data, Buffer.from(data)])
+    return this
+  }
+
   serialize() {
     return Buffer.concat([
       Buffer.from([Structure.START]),
